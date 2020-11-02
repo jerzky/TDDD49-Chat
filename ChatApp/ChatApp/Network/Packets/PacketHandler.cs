@@ -7,9 +7,12 @@ namespace ChatApp.Network.Packets
     public class PacketHandler
     {
 
-        public EventHandler<LoginPacket> LoginRecieived;
-        public EventHandler<LogoutPacket> LogoutRecieived;
+        public EventHandler<SendRequestPacket> SendRequestRecieived;
+        public EventHandler<RequestRejectedPacket> RequestRejectedRecieived;
+        public EventHandler<RequestAcceptedPacket> RequestAcceptedRecieived;
         public EventHandler<MessagePacket> MessageRecieived;
+
+
 
 
         private readonly JsonSerializerSettings _settings = new JsonSerializerSettings()
@@ -29,19 +32,23 @@ namespace ChatApp.Network.Packets
 
             switch (header)
             {
-                case PacketHeader.Login:
-                    OnLoginRecieived(packet as LoginPacket);
+                case PacketHeader.SendRequest:
+                    SendRequestRecieived?.Invoke(this, packet as SendRequestPacket);
                     break;
-                case PacketHeader.Logout:
-                    OnLogoutRecieived(packet as LogoutPacket);
+                case PacketHeader.RequestRejected:
+                    RequestRejectedRecieived?.Invoke(this, packet as RequestRejectedPacket);
+                    break;
+                case PacketHeader.RequestAccepted:
+                    RequestAcceptedRecieived?.Invoke(this, packet as RequestAcceptedPacket);
                     break;
                 case PacketHeader.Message:
-                    OnMessageRecieived(packet as MessagePacket);
+                    MessageRecieived?.Invoke(this, packet as MessagePacket);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
+
 
         public string ToJson(object obj)
         {
@@ -50,19 +57,7 @@ namespace ChatApp.Network.Packets
                 : throw new ArgumentException("Must be a IJSON packet.");
         }
 
-        private void OnLoginRecieived(LoginPacket packet)
-        {
-            LoginRecieived?.Invoke(this, packet);
-        }
 
-        private void OnLogoutRecieived(LogoutPacket packet)
-        {
-            LogoutRecieived?.Invoke(this, packet);
-        }
-        private void OnMessageRecieived(MessagePacket packet)
-        {
-            MessageRecieived?.Invoke(this, packet);
-        }
 
     }
 }

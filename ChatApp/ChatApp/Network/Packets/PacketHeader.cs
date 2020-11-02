@@ -2,8 +2,9 @@
 {
     public enum PacketHeader : byte
     {
-        Login = 0,
-        Logout = 1,
-        Message = 2
+        SendRequest = 0,
+        RequestRejected = 1,
+        RequestAccepted = 2,
+        Message = 3
     }
 }
