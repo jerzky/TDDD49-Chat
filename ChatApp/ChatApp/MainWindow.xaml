@@ -18,6 +18,7 @@
             <RowDefinition Height="200"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <views:ConnectionView/>
+        <views:ConnectionView DataContext="{Binding ConnectionViewModel}"/>
+        <views:ChatView Grid.Row="0" Grid.Column="2" Grid.RowSpan="2" DataContext="{Binding ChatViewModel}"/>
     </Grid>
 </Window>
