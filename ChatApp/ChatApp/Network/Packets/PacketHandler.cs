@@ -12,6 +12,7 @@ namespace ChatApp.Network.Packets
         public EventHandler<RequestRejectedPacket> RequestRejectedRecieived;
         public EventHandler<RequestAcceptedPacket> RequestAcceptedRecieived;
         public EventHandler<MessagePacket> MessageRecieived;
+        public EventHandler<BuzzPacket> BuzzReceived;
 
 
 
@@ -44,6 +45,9 @@ namespace ChatApp.Network.Packets
                     break;
                 case PacketHeader.Message:
                     MessageRecieived?.Invoke(this, packet as MessagePacket);
+                    break;
+                case PacketHeader.Buzz:
+                    BuzzReceived?.Invoke(this, packet as BuzzPacket);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

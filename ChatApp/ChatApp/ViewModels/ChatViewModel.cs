@@ -20,12 +20,14 @@ namespace ChatApp.ViewModels
         private readonly ConversationHistory _history;
         private string _inputMessage;
         private IAsyncCommand _sendClickedCommand;
+        private IAsyncCommand _buzzClickedCommand;
         private Conversation _conversation = new Conversation();
 
 
         public event PropertyChangedEventHandler PropertyChanged;
         public ObservableCollection<Message> Messages { get; private set; } = new ObservableCollection<Message>();
         public IAsyncCommand SendClickedCommand => _sendClickedCommand ??= new AsyncCommand(SendClicked);
+        public IAsyncCommand BuzzClickedCommand => _buzzClickedCommand ??= new AsyncCommand(BuzzClicked);
 
         public string InputMessage 
         { 
@@ -66,6 +68,10 @@ namespace ChatApp.ViewModels
                 return;
             _conversation.Messages.Add(e);
            
+        }
+        public async Task BuzzClicked()
+        {
+            await _client.SendBuzz();
         }
 
         [NotifyPropertyChangedInvocator]

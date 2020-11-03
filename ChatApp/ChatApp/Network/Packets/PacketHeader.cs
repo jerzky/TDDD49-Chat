@@ -5,6 +5,7 @@
         SendRequest = 0,
         RequestRejected = 1,
         RequestAccepted = 2,
-        Message = 3
+        Message = 3,
+        Buzz
     }
 }

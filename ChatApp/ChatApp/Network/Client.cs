@@ -10,6 +10,7 @@ using System.Windows;
 using ChatApp.Network.Packets;
 using ChatApp.Models;
 using System.Windows.Media;
+using System.Diagnostics;
 
 namespace ChatApp.Network
 {
@@ -26,6 +27,7 @@ namespace ChatApp.Network
 
         public EventHandler<SendRequestPacket> SendRequestRecieved;
         public EventHandler<RequestAcceptedPacket> RequestAcceptedRecieived;
+        public EventHandler<BuzzPacket> BuzzReceived;
         public EventHandler<Message> MessageReceived;
         public EventHandler<string> ClientDisconnected;
 
@@ -56,6 +58,12 @@ namespace ChatApp.Network
             _packetHandler.MessageRecieived += (sender, packet) =>
             {
                 MessageReceived?.Invoke(this, new Message(packet.Message, Brushes.Red, _otherUsername));
+            };
+
+            _packetHandler.BuzzReceived += (sender, packet) =>
+            {
+                System.Media.SoundPlayer player = new System.Media.SoundPlayer("nudge.wav");
+                player.Play();
             };
         }
 
@@ -158,6 +166,11 @@ namespace ChatApp.Network
         public async Task SendMessage(string text)
         {
             await SendPacket(new MessagePacket() { Message = text });
+        }
+
+        public async Task SendBuzz()
+        {
+            await SendPacket(new BuzzPacket());
         }
 
         public async Task SendRequestPacket(string username)
