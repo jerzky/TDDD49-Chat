@@ -20,9 +20,9 @@
             <RowDefinition Height="100"/>
         </Grid.RowDefinitions>
         <Button VerticalAlignment="Top" Height="25" Content="Send" Grid.Column="1" Grid.Row="1" Margin="0,2,2,2" Command="{Binding SendClickedCommand}"/>
-        <TextBox Grid.Row="1" Grid.Column="0" Margin="2" TextAlignment="Left" BorderBrush="DimGray" Text="{Binding InputMessage, UpdateSourceTrigger=PropertyChanged}">
+        <TextBox Grid.Row="1" Grid.Column="0" Margin="2" TextAlignment="Left" BorderBrush="DimGray" AcceptsReturn="False" Text="{Binding InputMessage, UpdateSourceTrigger=PropertyChanged}">
             <i:Interaction.Triggers>
-                <ei:KeyTrigger Key="Enter">
+                <ei:KeyTrigger Key="Enter" FiredOn="KeyUp">
                     <i:InvokeCommandAction Command="{Binding SendClickedCommand}" />
                 </ei:KeyTrigger>
             </i:Interaction.Triggers>

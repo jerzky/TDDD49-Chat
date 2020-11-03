@@ -129,7 +129,11 @@ namespace ChatApp.Network
             }
             catch (IOException e)
             {
-                MessageReceived?.Invoke(this, new Message($"User: {_otherUsername} has left the chat."));
+                
+                Disconnect();
+            }
+            catch (SocketException e)
+            {
                 Disconnect();
             }
         }
@@ -137,6 +141,7 @@ namespace ChatApp.Network
 
         public void Disconnect()
         {
+            MessageReceived?.Invoke(this, new Message($"User: {_otherUsername} has left the chat."));
             Enabled = false;
             if (_tcpClient.Connected)
                 _tcpClient.Close();

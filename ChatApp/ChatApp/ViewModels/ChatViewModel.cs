@@ -75,6 +75,8 @@ namespace ChatApp.ViewModels
 
         public async Task SendClicked()
         {
+            if (string.IsNullOrEmpty(_inputMessage))
+                return;
 
             MessageCreate(this, new Message(_inputMessage, Brushes.Green, _client.MyUsername));
              await _client.SendMessage(_inputMessage);
