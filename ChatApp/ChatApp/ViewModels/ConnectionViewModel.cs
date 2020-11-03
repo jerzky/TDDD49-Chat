@@ -20,7 +20,7 @@ namespace ChatApp.ViewModels
         private IAsyncCommand _startListenCommand;
         private IAsyncCommand _connectCommand;
         private string _ip = "127.0.0.1";
-        private int _port = 4321;
+        private int _port = 60619;
 
         private string _username;
         

@@ -8,7 +8,9 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 namespace ChatApp.ViewModels
 {
@@ -59,8 +61,7 @@ namespace ChatApp.ViewModels
 
         private void MessageCreate(object? sender, Message e)
         {
-
-            Messages.Add(e);
+            Application.Current.Dispatcher.BeginInvoke(() => { Messages.Add(e); });
             if (e.IsSystemMessage)
                 return;
             _conversation.Messages.Add(e);
