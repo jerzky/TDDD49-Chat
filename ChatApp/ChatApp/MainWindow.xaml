@@ -7,17 +7,20 @@
         xmlns:viewModels="clr-namespace:ChatApp.ViewModels"
         xmlns:views="clr-namespace:ChatApp.Views"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" WindowStartupLocation="CenterScreen">
+        Title="MainWindow" Height="450" Width="800" WindowStartupLocation="CenterScreen" Closed="MainWindow_OnClosed">
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250" />
-            <ColumnDefinition Width="*" />
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="200"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <views:ConnectionView Margin="2" DataContext="{Binding ConnectionViewModel}"/>
-        <views:ChatView Grid.Row="0" Grid.Column="1" Grid.RowSpan="2" DataContext="{Binding ChatViewModel}"/>
+        <TabControl Grid.Row="0" SelectedIndex="{Binding TabIndex}">
+            <TabItem Header="Connection">
+                <views:ConnectionView Margin="2" DataContext="{Binding ConnectionViewModel}"/>
+            </TabItem>
+            <TabItem Header="Chat">
+                <views:ChatView  DataContext="{Binding ChatViewModel}"/>
+            </TabItem>
+            <TabItem Header="History">
+                <views:HistoryView  DataContext="{Binding HistoryViewModel}"/>
+            </TabItem>
+        </TabControl>
+
+
     </Grid>
 </Window>

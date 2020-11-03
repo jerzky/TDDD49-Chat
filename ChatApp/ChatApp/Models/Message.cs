@@ -2,15 +2,21 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Media;
+using Newtonsoft.Json;
 
 namespace ChatApp.Models
 {
     public class Message
     {
-        public string Username { get; private set; }
-        public string Text { get; private set; }
-        public string Time { get; private set; }
-        public Brush Color { get; private set; } = Brushes.Black;
+        public string Username { get;  set; }
+        public string Text { get;  set; }
+        public string Time { get;  set; }
+
+        public Brush Color { get; set; } = Brushes.Black;
+     
+        [JsonIgnore]
+        public bool IsSystemMessage => Username == "System";
+
         public override string ToString()
         {
             return $"[{Time}] <{Username}> {Text}";
@@ -18,8 +24,7 @@ namespace ChatApp.Models
 
         public Message()
         {
-            Time = "N/A";
-            Username = "N/A";
+
         }
 
         public Message(string text, string username = "System")

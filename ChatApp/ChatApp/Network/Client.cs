@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using ChatApp.Network.Packets;
@@ -17,15 +19,21 @@ namespace ChatApp.Network
         private readonly PacketHandler _packetHandler = new PacketHandler();
         private TcpClient _tcpClient = new TcpClient();
         private TcpListener _tcpListener;
-        private NetworkStream _networkStream;
-        private StreamWriter _writer;
+
         private string _otherUsername;
         public string MyUsername { get; set; }
-        public string OtherUsername { get => _otherUsername; }
+        public string OtherUsername => _otherUsername;
 
         public EventHandler<SendRequestPacket> SendRequestRecieved;
+        public EventHandler<RequestAcceptedPacket> RequestAcceptedRecieived;
         public EventHandler<Message> MessageReceived;
+        public EventHandler<string> ClientDisconnected;
+
         public bool Enabled { get; set; } = true;
+
+        public bool IsConnected => _tcpClient.Connected;
+
+
         public Client()
         {
 
@@ -37,6 +45,7 @@ namespace ChatApp.Network
             _packetHandler.RequestAcceptedRecieived += (sender, packet) =>
             {
                 MessageReceived?.Invoke(this, new Message($"{packet.Username} joined the chat."));
+                RequestAcceptedRecieived?.Invoke(sender, packet);
                 _otherUsername = packet.Username;
             };
             _packetHandler.RequestRejectedRecieived += (sender, packet) =>
@@ -54,21 +63,28 @@ namespace ChatApp.Network
 
         public async Task Connect(string ip, int port, string username)
         {
+            _tcpClient = new TcpClient();
             MessageReceived?.Invoke(this, new Message($"Connecting to {ip}:{port}"));
             var connectTask = _tcpClient.ConnectAsync(ip, port);
-            var timeoutTask = Task.Delay(millisecondsDelay: 2000);
+            var timeoutTask = Task.Delay(millisecondsDelay: 200);
             if (await Task.WhenAny(connectTask, timeoutTask) == timeoutTask)
             {
                 MessageBox.Show("User is not avaliable at the moment.");
+                await Task.Delay(1000);
+                ClientDisconnected?.Invoke(this, "");
                 return;
-                //  throw new TimeoutException();
             }
-            _writer = new StreamWriter(_tcpClient.GetStream());
-            _networkStream = _tcpClient.GetStream();
+
+
+            if (!_tcpClient.Connected)
+            {
+                Disconnect();
+                return;
+            }
+
             await SendRequestPacket(username);
             await ClientListen();
         }
-      
 
 
         public async Task StartListener(int port)
@@ -76,24 +92,36 @@ namespace ChatApp.Network
             MessageReceived?.Invoke(this, new Message($"Listening to {port}"));
             _tcpListener = TcpListener.Create(port);
             _tcpListener.Start();
-            _tcpClient = await _tcpListener.AcceptTcpClientAsync();
-            _writer = new StreamWriter(_tcpClient.GetStream());
-            _networkStream = _tcpClient.GetStream();
+            try
+            {
+                _tcpClient = await _tcpListener.AcceptTcpClientAsync();
+            }
+            catch (ObjectDisposedException e)
+            {
+                Disconnect();
+                return;
+            }
             await ClientListen();
         }
 
 
-
         private async Task ClientListen()
         {
+            Enabled = true;
             try
             {
                 while (Enabled)
                 {
+
+
                     var dataReceived = new byte[1024];
-                    var length = await _networkStream.ReadAsync(dataReceived, 0, dataReceived.Length);
-                    if (length <= 0) 
-                        continue;
+                    var length = await _tcpClient.Client.ReceiveAsync(dataReceived,  SocketFlags.None);
+
+                    if (length == 0)
+                    {
+                        Disconnect();
+                        break;
+                    }
 
                     var segment = new ArraySegment<byte>(dataReceived, 0, length);
                     _packetHandler.Parse(Encoding.UTF8.GetString(segment));
@@ -102,18 +130,24 @@ namespace ChatApp.Network
             catch (IOException e)
             {
                 MessageReceived?.Invoke(this, new Message($"User: {_otherUsername} has left the chat."));
+                Disconnect();
             }
-            finally
-            {
+        }
+
+
+        public void Disconnect()
+        {
+            Enabled = false;
+            if (_tcpClient.Connected)
                 _tcpClient.Close();
-                _tcpClient.Dispose();
-            }
+            _tcpListener?.Stop();
+            ClientDisconnected?.Invoke(this, "");
         }
 
         private async Task SendPacket(IJSONPacket packet)
         {
             if(_tcpClient.Connected)
-                await _networkStream.WriteAsync(Encoding.UTF8.GetBytes(_packetHandler.ToJson(packet)));
+                await _tcpClient.GetStream().WriteAsync(Encoding.UTF8.GetBytes(_packetHandler.ToJson(packet)));
         }
 
         public async Task SendMessage(string text)

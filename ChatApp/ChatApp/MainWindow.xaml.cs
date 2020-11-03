@@ -27,5 +27,10 @@ namespace ChatApp
             DataContext = new MainViewModel();
         }
 
+        private void MainWindow_OnClosed(object? sender, EventArgs e)
+        {
+            var mainviewmodel = DataContext as MainViewModel;
+            mainviewmodel?.Close();
+        }
     }
 }

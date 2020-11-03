@@ -14,13 +14,17 @@ namespace ChatApp.ViewModels
 {
     public class ChatViewModel : INotifyPropertyChanged
     {
-        private Client _client;
+        private readonly Client _client;
+        private readonly ConversationHistory _history;
         private string _inputMessage;
         private IAsyncCommand _sendClickedCommand;
+        private Conversation _conversation = new Conversation();
+
 
         public event PropertyChangedEventHandler PropertyChanged;
         public ObservableCollection<Message> Messages { get; private set; } = new ObservableCollection<Message>();
-        public IAsyncCommand SendClickedCommand { get => _sendClickedCommand ??= new AsyncCommand(SendClicked); } 
+        public IAsyncCommand SendClickedCommand => _sendClickedCommand ??= new AsyncCommand(SendClicked);
+
         public string InputMessage 
         { 
             get => _inputMessage; 
@@ -31,10 +35,36 @@ namespace ChatApp.ViewModels
             } 
         }
 
-        public ChatViewModel(Client client)
+        public ChatViewModel(Client client, ConversationHistory history)
         {
             _client = client;
-            client.MessageReceived += (sender, message) => Messages.Add(message);
+            _history = history;
+            client.MessageReceived += MessageCreate;
+            client.ClientDisconnected += ClientDisconnected;
+            _conversation.Date = DateTime.Now;
+            
+          
+
+        }
+
+        private void ClientDisconnected(object? sender, string e)
+        {
+            _conversation.Date = DateTime.Now;
+            _conversation.Username = _client.OtherUsername;
+            if (_conversation.Messages.Count > 0)
+                _history.Conversations.Add(_conversation);
+
+            _conversation = new Conversation();
+        }
+
+        private void MessageCreate(object? sender, Message e)
+        {
+
+            Messages.Add(e);
+            if (e.IsSystemMessage)
+                return;
+            _conversation.Messages.Add(e);
+           
         }
 
         [NotifyPropertyChangedInvocator]
@@ -45,8 +75,9 @@ namespace ChatApp.ViewModels
 
         public async Task SendClicked()
         {
-            Messages.Add(new Message(_inputMessage, Brushes.Green, _client.MyUsername));
-            await _client.SendMessage(_inputMessage);
+
+            MessageCreate(this, new Message(_inputMessage, Brushes.Green, _client.MyUsername));
+             await _client.SendMessage(_inputMessage);
             InputMessage = "";
 
         }

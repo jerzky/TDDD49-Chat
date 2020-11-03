@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 using Newtonsoft.Json;
 
 namespace ChatApp.Network.Packets
@@ -25,7 +26,7 @@ namespace ChatApp.Network.Packets
             var packet = JsonConvert.DeserializeObject<IJSONPacket>(jsondata, _settings);
             if (packet == null)
             {
-               Console.WriteLine("error");
+                MessageBox.Show(jsondata);
                return;
             }
             var header = packet.Header;

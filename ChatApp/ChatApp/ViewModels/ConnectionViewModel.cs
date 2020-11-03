@@ -16,6 +16,7 @@ namespace ChatApp.ViewModels
     public class ConnectionViewModel : INotifyPropertyChanged
     {
         private readonly Client _client;
+        private readonly MainViewModel _mainViewModel;
         private IAsyncCommand _startListenCommand;
         private IAsyncCommand _connectCommand;
         private string _ip = "127.0.0.1";
@@ -25,6 +26,7 @@ namespace ChatApp.ViewModels
         
 
         private bool _isNotConnected = true;
+        private AsyncCommand _disconnectCommand;
 
 
         public bool IsNotConnected
@@ -37,16 +39,27 @@ namespace ChatApp.ViewModels
 
                 _isNotConnected = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(IsConnected));
             }
         }
+
+        public bool IsConnected => !_isNotConnected;
+
         public IAsyncCommand StartListenCommand
         {
-            get { return _startListenCommand ??= new AsyncCommand(StartListen, () => IsNotConnected); }
+            get { return _startListenCommand ??= new AsyncCommand(StartListen); }
         }
         public IAsyncCommand ConnectCommand
         {
-            get { return _connectCommand ??= new AsyncCommand(Connect, () => IsNotConnected); }
+            get { return _connectCommand ??= new AsyncCommand(Connect); }
         }
+        public IAsyncCommand DisconnectCommand
+        {
+            get { return _disconnectCommand ??= new AsyncCommand(Disconnect); }
+        }
+
+
+
         public string IP
         {
             get => _ip;
@@ -86,10 +99,13 @@ namespace ChatApp.ViewModels
             }
         }
 
-        public ConnectionViewModel(Client client)
+        public ConnectionViewModel(Client client, MainViewModel mainViewModel)
         {
             _client = client;
+            _mainViewModel = mainViewModel;
             _client.SendRequestRecieved += OnSendRequestRecieved;
+            _client.ClientDisconnected += (sender, s) => IsNotConnected = true;
+            _client.RequestAcceptedRecieived += (sender, packet) => _mainViewModel.TabIndex = 1;
         }
 
         private void OnSendRequestRecieved(object? sender, SendRequestPacket e)
@@ -102,8 +118,15 @@ namespace ChatApp.ViewModels
                 Owner = Application.Current.MainWindow
             };
             rrd.ShowDialog();
-            if(rrd.RequestAccepted) _client.MessageReceived?.Invoke(this, new Message($"{_client.OtherUsername} joined the chat."));
+            if (rrd.RequestAccepted)
+            {
+                _client.MessageReceived?.Invoke(this, new Message($"{_client.OtherUsername} joined the chat."));
+                _mainViewModel.TabIndex = 1;
+            }
+
             Task.Run(() => rrd.RequestAccepted ? _client.SendRequestAcceptedPacket(Username) : _client.SendRequestRejectedPacket());
+
+
         }
 
 
@@ -117,8 +140,15 @@ namespace ChatApp.ViewModels
         {
             IsNotConnected = false;
             await _client.Connect(_ip, _port, Username);
+           
         }
 
+        private async Task Disconnect()
+        {
+            IsNotConnected = true;
+            _client.MessageReceived?.Invoke(this, new Message($"Disconnected."));
+            await Task.Run( () => _client.Disconnect());
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
