@@ -30,11 +30,11 @@ namespace ChatApp.Network
         public EventHandler<BuzzPacket> BuzzReceived;
         public EventHandler<Message> MessageReceived;
         public EventHandler<string> ClientDisconnected;
-
         public bool Enabled { get; set; } = true;
 
         public bool IsConnected => _tcpClient.Connected;
 
+        private DateTime _lastBuzzReceived = DateTime.Now;
 
         public Client()
         {
@@ -62,6 +62,9 @@ namespace ChatApp.Network
 
             _packetHandler.BuzzReceived += (sender, packet) =>
             {
+                if (DateTime.Now.Subtract(_lastBuzzReceived).TotalSeconds < 2)
+                    return;
+                MessageReceived?.Invoke(this, new Message($"{OtherUsername} buzzed you!", OtherUsername));
                 System.Media.SoundPlayer player = new System.Media.SoundPlayer("nudge.wav");
                 player.Play();
             };

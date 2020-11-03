@@ -23,7 +23,7 @@ namespace ChatApp.ViewModels
         private IAsyncCommand _buzzClickedCommand;
         private Conversation _conversation = new Conversation();
 
-
+        private DateTime _lastBuzzSent = DateTime.Now;
         public event PropertyChangedEventHandler PropertyChanged;
         public ObservableCollection<Message> Messages { get; private set; } = new ObservableCollection<Message>();
         public IAsyncCommand SendClickedCommand => _sendClickedCommand ??= new AsyncCommand(SendClicked);
@@ -71,6 +71,10 @@ namespace ChatApp.ViewModels
         }
         public async Task BuzzClicked()
         {
+            if (DateTime.Now.Subtract(_lastBuzzSent).TotalSeconds < 2)
+                return;
+            _lastBuzzSent = DateTime.Now;
+            _client.MessageReceived?.Invoke(this, new Message($"You buzzed {_client.OtherUsername}!", _client.MyUsername));
             await _client.SendBuzz();
         }
 
