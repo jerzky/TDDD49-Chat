@@ -111,8 +111,6 @@ namespace ChatApp.ViewModels
 
         private void OnSendRequestRecieved(object? sender, SendRequestPacket e)
         {
-
-            // MessageBox.Show($"User: {e.Username} wants to connect!");
             //Accept or reject?
             var rrd = new RequestReceivedDialog(e.Username)
             {
@@ -151,15 +149,15 @@ namespace ChatApp.ViewModels
             }
             IsNotConnected = false;
             await _client.Connect(_ip, _port, Username);
-           
         }
 
         private async Task Disconnect()
         {
             IsNotConnected = true;
             _client.MessageReceived?.Invoke(this, new Message($"Disconnected."));
-            await Task.Run( () => _client.Disconnect());
+            await Task.Run(() => _client.Disconnect());
         }
+
 
         public event PropertyChangedEventHandler PropertyChanged;
 

@@ -54,7 +54,6 @@ namespace ChatApp.ViewModels
                 if (value.Equals(_searchText))
                     return;
                 _searchText = value;
-                // search funkar inte av någon anledning.
                 OnPropertyChanged();
                 Conversations = _history.Conversations.FindAll(c => c.Username.ToLower().Contains(SearchText.ToLower()));
             }
