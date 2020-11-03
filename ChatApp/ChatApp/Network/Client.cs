@@ -123,8 +123,6 @@ namespace ChatApp.Network
             {
                 while (Enabled)
                 {
-
-
                     var dataReceived = new byte[1024];
                     var length = await _tcpClient.Client.ReceiveAsync(dataReceived,  SocketFlags.None);
 
@@ -140,6 +138,7 @@ namespace ChatApp.Network
             }
             catch (IOException e)
             {
+                // skicka vidare till nästa lager
                 Disconnect();
             }
             catch (SocketException e)

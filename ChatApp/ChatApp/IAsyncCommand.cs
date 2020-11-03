@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using System.Windows.Input;
 
+// TODO: explain how this work and where we got the code. Same for auto scroll
 //https://johnthiriet.com/mvvm-going-async-with-async-command/
 //https://johnthiriet.com/removing-async-void/
 namespace ChatApp

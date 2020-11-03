@@ -12,11 +12,10 @@ namespace ChatApp.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        private readonly Client _client = new Client();
+        private readonly Client _client;
         public ChatViewModel ChatViewModel { get; private set; }
         public ConnectionViewModel ConnectionViewModel { get; private set; }
         public HistoryViewModel HistoryViewModel { get; private set; }
-
 
         private readonly ConversationHistory _history;
         private int _tabIndex = 0;
@@ -34,19 +33,20 @@ namespace ChatApp.ViewModels
             }
         }
 
-        public MainViewModel()
-        {
-            _history = ConversationHistory.Load("history.json");
 
-            ConnectionViewModel = new ConnectionViewModel(_client, this);
-            ChatViewModel = new ChatViewModel(_client, _history);
-            HistoryViewModel = new HistoryViewModel(_history);
+        public MainViewModel(ConnectionViewModel connectionViewModel, ChatViewModel chatViewModel, HistoryViewModel historyViewModel, Client client)
+        {
+            ConnectionViewModel = connectionViewModel;
+            ChatViewModel = chatViewModel;
+            HistoryViewModel = historyViewModel;
+            _client = client;
+            ConnectionViewModel.EditTabIndex = (value) => TabIndex = value;
         }
 
         public void Close()
         {
             _client.Disconnect();
-            ConversationHistory.Save(_history, "history.json");
+            HistoryViewModel.Save();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

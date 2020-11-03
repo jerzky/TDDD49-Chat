@@ -16,7 +16,6 @@ namespace ChatApp.Models
 
         public static void Save(ConversationHistory history, string path)
         {
-         
             var json = JsonConvert.SerializeObject(history, Formatting.Indented);
             File.WriteAllText(path, json);
         }

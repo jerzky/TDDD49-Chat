@@ -35,7 +35,7 @@ namespace ChatApp.ViewModels
             get => _selectedConversation;
             set
             {
-                if (value.Equals(_selectedConversation))
+                if (value == null || value.Equals(_selectedConversation))
                     return;
 
 
@@ -54,6 +54,7 @@ namespace ChatApp.ViewModels
                 if (value.Equals(_searchText))
                     return;
                 _searchText = value;
+                // search funkar inte av någon anledning.
                 OnPropertyChanged();
                 Conversations = _history.Conversations.FindAll(c => c.Username.ToLower().Contains(SearchText.ToLower()));
             }
@@ -64,6 +65,11 @@ namespace ChatApp.ViewModels
         {
             _history = history;
             Conversations = _history.Conversations;
+        }
+
+        public void Save()
+        {
+            ConversationHistory.Save(_history, "history.json");
         }
 
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 using System.Windows.Media;
 using Newtonsoft.Json;
@@ -8,6 +9,7 @@ namespace ChatApp.Models
 {
     public class Message
     {
+        [DefaultValue(" ")]
         public string Username { get;  set; }
         public string Text { get;  set; }
         public string Time { get;  set; }

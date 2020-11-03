@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -16,7 +17,6 @@ namespace ChatApp.ViewModels
     public class ConnectionViewModel : INotifyPropertyChanged
     {
         private readonly Client _client;
-        private readonly MainViewModel _mainViewModel;
         private IAsyncCommand _startListenCommand;
         private IAsyncCommand _connectCommand;
         private string _ip = "127.0.0.1";
@@ -99,13 +99,14 @@ namespace ChatApp.ViewModels
             }
         }
 
-        public ConnectionViewModel(Client client, MainViewModel mainViewModel)
+        public Action<int> EditTabIndex { get; set; }
+
+        public ConnectionViewModel(Client client)
         {
             _client = client;
-            _mainViewModel = mainViewModel;
             _client.SendRequestRecieved += OnSendRequestRecieved;
             _client.ClientDisconnected += (sender, s) => IsNotConnected = true;
-            _client.RequestAcceptedRecieived += (sender, packet) => _mainViewModel.TabIndex = 1;
+            _client.RequestAcceptedRecieived += (sender, packet) => EditTabIndex.Invoke(1);
         }
 
         private void OnSendRequestRecieved(object? sender, SendRequestPacket e)
@@ -121,7 +122,7 @@ namespace ChatApp.ViewModels
             if (rrd.RequestAccepted)
             {
                 _client.MessageReceived?.Invoke(this, new Message($"{_client.OtherUsername} joined the chat."));
-                _mainViewModel.TabIndex = 1;
+                EditTabIndex.Invoke(1);
             }
 
             Task.Run(() => rrd.RequestAccepted ? _client.SendRequestAcceptedPacket(Username) : _client.SendRequestRejectedPacket());
@@ -132,12 +133,22 @@ namespace ChatApp.ViewModels
 
         private async Task StartListen()
         {
+            if (string.IsNullOrEmpty(Username))
+            {
+                MessageBox.Show("Enter an username before listening");
+                return;
+            }
             IsNotConnected = false;
             await _client.StartListener(_port);
         }
 
         private async Task Connect()
         {
+            if (string.IsNullOrEmpty(Username))
+            {
+                MessageBox.Show("Enter an username before connecting");
+                return;
+            }
             IsNotConnected = false;
             await _client.Connect(_ip, _port, Username);
            
