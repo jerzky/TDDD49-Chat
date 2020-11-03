@@ -140,7 +140,6 @@ namespace ChatApp.Network
             }
             catch (IOException e)
             {
-                
                 Disconnect();
             }
             catch (SocketException e)
