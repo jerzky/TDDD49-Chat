@@ -22,12 +22,18 @@ namespace ChatApp.Models
             Username = "N/A";
         }
 
-        public Message(string text, Brush color = null, string username = "System")
+        public Message(string text, string username = "System")
         {
             Time = DateTime.Now.ToString();
             Text = text;
             Username = username;
-            if(color != null) Color = color; 
+        }
+        public Message(string text, Brush color, string username = "System")
+        {
+            Time = DateTime.Now.ToString();
+            Text = text;
+            Username = username;
+            Color = color;
         }
     }
 }

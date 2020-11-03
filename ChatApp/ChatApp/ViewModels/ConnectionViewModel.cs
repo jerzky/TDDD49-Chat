@@ -24,28 +24,28 @@ namespace ChatApp.ViewModels
         private string _username;
         
 
-        private bool _isBusy = true;
+        private bool _isNotConnected = true;
 
 
-        public bool IsBusy
+        public bool IsNotConnected
         {
-            get => _isBusy;
+            get => _isNotConnected;
             private set
             {
-                if (value.Equals(_isBusy))
+                if (value.Equals(_isNotConnected))
                     return;
 
-                _isBusy = value;
+                _isNotConnected = value;
                 OnPropertyChanged();
             }
         }
         public IAsyncCommand StartListenCommand
         {
-            get { return _startListenCommand ??= new AsyncCommand(StartListen, () => IsBusy); }
+            get { return _startListenCommand ??= new AsyncCommand(StartListen, () => IsNotConnected); }
         }
         public IAsyncCommand ConnectCommand
         {
-            get { return _connectCommand ??= new AsyncCommand(Connect, () => IsBusy); }
+            get { return _connectCommand ??= new AsyncCommand(Connect, () => IsNotConnected); }
         }
         public string IP
         {
@@ -97,7 +97,10 @@ namespace ChatApp.ViewModels
 
             // MessageBox.Show($"User: {e.Username} wants to connect!");
             //Accept or reject?
-            var rrd = new RequestReceivedDialog(e.Username);
+            var rrd = new RequestReceivedDialog(e.Username)
+            {
+                Owner = Application.Current.MainWindow
+            };
             rrd.ShowDialog();
             if(rrd.RequestAccepted) _client.MessageReceived?.Invoke(this, new Message($"{_client.OtherUsername} joined the chat."));
             Task.Run(() => rrd.RequestAccepted ? _client.SendRequestAcceptedPacket(Username) : _client.SendRequestRejectedPacket());
@@ -106,15 +109,14 @@ namespace ChatApp.ViewModels
 
         private async Task StartListen()
         {
-            IsBusy = true;
+            IsNotConnected = false;
             await _client.StartListener(_port);
         }
 
         private async Task Connect()
         {
-            IsBusy = false;
+            IsNotConnected = false;
             await _client.Connect(_ip, _port, Username);
-            IsBusy = true;
         }
 
 

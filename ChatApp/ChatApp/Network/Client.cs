@@ -91,12 +91,12 @@ namespace ChatApp.Network
                 while (Enabled)
                 {
                     var dataReceived = new byte[1024];
-                    int length = await _networkStream.ReadAsync(dataReceived, 0, dataReceived.Length);
-                    if (length > 0)
-                    {
-                        var segment = new ArraySegment<byte>(dataReceived, 0, length);
-                        _packetHandler.Parse(Encoding.UTF8.GetString(segment));
-                    }
+                    var length = await _networkStream.ReadAsync(dataReceived, 0, dataReceived.Length);
+                    if (length <= 0) 
+                        continue;
+
+                    var segment = new ArraySegment<byte>(dataReceived, 0, length);
+                    _packetHandler.Parse(Encoding.UTF8.GetString(segment));
                 }
             }
             catch (IOException e)
@@ -112,7 +112,8 @@ namespace ChatApp.Network
 
         private async Task SendPacket(IJSONPacket packet)
         {
-            await _networkStream.WriteAsync(Encoding.UTF8.GetBytes(_packetHandler.ToJson(packet)));
+            if(_tcpClient.Connected)
+                await _networkStream.WriteAsync(Encoding.UTF8.GetBytes(_packetHandler.ToJson(packet)));
         }
 
         public async Task SendMessage(string text)
