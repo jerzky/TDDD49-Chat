@@ -141,7 +141,7 @@ namespace ChatApp.Network
 
         public void Disconnect()
         {
-            //MessageReceived?.Invoke(this, new Message($"User: {_otherUsername} has left the chat."));
+            MessageReceived?.Invoke(this, new Message($"User: {_otherUsername} has left the chat."));
             Enabled = false;
             if (_tcpClient.Connected)
                 _tcpClient.Close();
